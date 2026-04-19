@@ -1,26 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --overlay-bg: transparent;
+  --sb-text: #f8fafc;
+  --sb-muted: #94a3b8;
+  --sb-panel: rgba(15, 23, 42, 0.92);
+  --sb-border: rgba(255, 255, 255, 0.12);
+  --sb-accent: #38bdf8;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-theme="dark"] {
+  --sb-panel: rgba(2, 6, 23, 0.94);
+  --sb-text: #f1f5f9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  color: var(--sb-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Transparent mode for OBS browser source */
+html[data-transparent="true"],
+html[data-transparent="true"] body,
+body[data-transparent="true"] {
+  background: transparent !important;
+}
+
+body[data-transparent="false"] {
+  background: #0f172a;
+}
+
+@keyframes clock-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  95% {
+    opacity: 0.82;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.clock-live {
+  animation: clock-blink 2s ease-in-out infinite;
 }

@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NHL playoffs scoreboard overlay
 
-## Getting Started
+Next.js (App Router) browser source for **OBS**, **TikTok Live Studio**, or any Chromium browser source. Transparent background on `/overlay`.
 
-First, run the development server:
+## Commands
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Deploy to [Vercel](https://vercel.com): connect the repo and use the default Next.js settings. Optional env vars are documented in `.env.example`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Routes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Path | Purpose |
+|------|---------|
+| `/overlay?game=GAME_ID` | Transparent scoreboard (OBS). Query: `shots=1`, `series=1`, `sponsor=0`, `theme=dark` |
+| `/today` | Redirects to the only live playoff game, or lists multiple live games |
+| `/admin/mock` | Mock controls for stream tests (gate with `NEXT_PUBLIC_MOCK_KEY` in production) |
 
-## Learn More
+## OBS browser source
 
-To learn more about Next.js, take a look at the following resources:
+- **URL:** `https://YOUR_DOMAIN/overlay?game=GAME_ID`
+- **Size:** **1920×1080** (full frame) or a compact top bar such as **1600×180**
+- Check **Shutdown source when not visible** (optional) and refresh browser source between games if needed
+- Custom CSS (optional): `body { background: rgba(0,0,0,0) !important; }`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Live data is read from the public NHL Web API (`api-web.nhle.com`) via a same-origin Edge proxy at `/api/nhl/*` to avoid browser CORS issues.
 
-## Deploy on Vercel
+## Project layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    api/nhl/[...path]/route.ts   # Edge proxy
+    overlay/page.tsx
+    today/page.tsx
+    admin/mock/page.tsx
+    page.tsx
+  components/
+    Scoreboard.tsx, TeamBlock.tsx, Clock.tsx, PowerPlayBanner.tsx, GoalAnimation.tsx, OverlayChrome.tsx
+  hooks/useGameFeed.ts
+  lib/nhl-api.ts, formatters.ts, polling.ts, team-colors.ts
+```
