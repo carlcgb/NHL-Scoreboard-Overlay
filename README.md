@@ -1,5 +1,7 @@
 # NHL playoffs scoreboard overlay
 
+**Repository:** [github.com/carlcgb/NHL-Scoreboard-Overlay](https://github.com/carlcgb/NHL-Scoreboard-Overlay)
+
 Next.js (App Router) browser source for **OBS**, **TikTok Live Studio**, or any Chromium browser source. Transparent background on `/overlay`.
 
 ## Commands
