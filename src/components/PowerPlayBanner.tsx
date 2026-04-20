@@ -25,37 +25,42 @@ function PowerPlayBannerInner({ view, layout = "horizontal" }: Props) {
       {show ? (
         <motion.div
           key="pp"
-          initial={{ opacity: 0, y: vertical ? -6 : -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: vertical ? -4 : -8 }}
-          transition={{ type: "spring", stiffness: 420, damping: 28 }}
-          className={
-            vertical
-              ? "pointer-events-none relative z-20 w-full px-2 pb-2 pt-1"
-              : "pointer-events-none absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-full px-3 pb-1"
-          }
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          className="relative z-20 w-full overflow-hidden border-b border-amber-600/30 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500"
         >
           <div
-            className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-lg border border-amber-400/50 bg-gradient-to-r from-amber-500/95 to-yellow-500/90 shadow-lg shadow-amber-900/40 ${
-              vertical
-                ? "mx-auto w-full max-w-[min(100%,28rem)] px-3 py-2.5"
-                : "px-4 py-1.5"
+            className={`flex w-full flex-col items-stretch justify-center gap-1 sm:flex-row sm:items-center sm:justify-center sm:gap-3 ${
+              vertical ? "px-3 py-3 sm:px-4 sm:py-3.5" : "px-3 py-2.5 sm:px-4 sm:py-2.5"
             }`}
           >
-            <span className={`leading-none ${vertical ? "text-2xl" : "text-lg"}`} aria-hidden>
-              ⚡
-            </span>
-            <span
-              className={`font-black uppercase tracking-wide text-slate-900 ${vertical ? "text-sm sm:text-base" : "text-xs tracking-widest"}`}
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+              <span
+                className={`shrink-0 leading-none text-slate-900 ${vertical ? "text-2xl" : "text-xl sm:text-2xl"}`}
+                aria-hidden
+              >
+                ⚡
+              </span>
+              <span
+                className={`text-center font-black uppercase text-slate-900 ${vertical ? "text-sm sm:text-base" : "text-xs sm:text-sm"}`}
+                style={{ textShadow: "0 1px 0 rgba(255,255,255,0.35)" }}
+              >
+                Power Play{" "}
+                <span className="whitespace-nowrap">{st.powerPlayAbbrev}</span>
+              </span>
+              <span
+                className={`font-mono font-black tabular-nums text-slate-950 ${vertical ? "text-base sm:text-lg" : "text-sm sm:text-base"}`}
+              >
+                {formatClock(view.clockTime)}
+              </span>
+            </div>
+            <div
+              className={`text-center font-bold uppercase text-slate-900/90 sm:border-l sm:border-slate-900/15 sm:pl-3 ${vertical ? "text-xs sm:text-sm" : "text-[11px] sm:text-xs"}`}
             >
-              Power Play {st.powerPlayAbbrev}{" "}
-              <span className="font-mono tabular-nums">{formatClock(view.clockTime)}</span>
-            </span>
-            <span
-              className={`font-bold uppercase text-slate-800/90 ${vertical ? "text-xs" : "text-[10px]"}`}
-            >
-              · PK {st.penaltyKillAbbrev}
-            </span>
+              PK {st.penaltyKillAbbrev}
+            </div>
           </div>
         </motion.div>
       ) : null}

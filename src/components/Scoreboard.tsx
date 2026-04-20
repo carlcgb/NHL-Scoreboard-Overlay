@@ -51,15 +51,16 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
     <GoalAnimation active={goalFlash} side={goalSide} vertical={vertical} />
   );
 
-  const emptyNet = view.emptyNetSide ? (
+  const emptyNetBadge = view.emptyNetSide ? (
     <div
-      className={`absolute rounded bg-black/60 font-bold uppercase tracking-wider text-amber-200 ${
+      className={`rounded-md bg-black/75 font-bold uppercase tracking-wider text-amber-200 ring-1 ring-amber-500/35 ${
         vertical
-          ? "right-2 top-2 px-2 py-1 text-[10px] sm:text-xs"
-          : "right-3 top-2 px-2 py-0.5 text-[9px]"
+          ? "px-2 py-1 text-[10px] sm:text-xs"
+          : "px-2 py-0.5 text-[9px] sm:text-[10px]"
       }`}
     >
-      Empty net · {view.emptyNetSide === "home" ? view.home.abbrev : view.away.abbrev}
+      Empty net ·{" "}
+      {view.emptyNetSide === "home" ? view.home.abbrev : view.away.abbrev}
     </div>
   ) : null;
 
@@ -78,16 +79,17 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
               "0 8px 48px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.08)",
           }}
         >
+          <PowerPlayBanner view={view} layout="vertical" />
           {commonGoal}
-          {emptyNet}
+          {view.emptyNetSide ? (
+            <div className="absolute right-2 top-2 z-[25]">{emptyNetBadge}</div>
+          ) : null}
 
           <div
             className={`pointer-events-none absolute inset-0 ${
               goalFlash ? "animate-pulse bg-amber-300/20" : "opacity-[0.06]"
             } ${goalFlash ? "" : "bg-white"}`}
           />
-
-          <PowerPlayBanner view={view} layout="vertical" />
 
           <div className="relative space-y-3 px-3 pb-4 pt-2 sm:space-y-4 sm:px-4 sm:pb-5 sm:pt-3">
             <div className="rounded-xl border border-white/15 bg-black/40 px-3 py-3 sm:px-4 sm:py-4">
@@ -97,7 +99,7 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
                 size="large"
               />
               {showSeries && view.seriesText ? (
-                <p className="mt-2 text-center text-[10px] font-semibold uppercase leading-snug tracking-wide text-slate-400 sm:text-xs">
+                <p className="mt-2 text-center text-xs font-semibold uppercase leading-snug tracking-wide text-slate-300 sm:text-sm">
                   {view.seriesText}
                 </p>
               ) : null}
@@ -133,7 +135,7 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
           </div>
 
           {showSponsor ? (
-            <div className="border-t border-white/10 py-2 text-center text-[9px] font-semibold uppercase tracking-[0.35em] text-slate-500 sm:text-[10px]">
+            <div className="border-t border-white/10 py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 sm:py-3 sm:text-xs sm:tracking-[0.35em]">
               Stanley Cup Playoffs
             </div>
           ) : null}
@@ -147,10 +149,8 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
       initial={{ opacity: 0.85 }}
       animate={{ opacity: view.isFinal ? 0.95 : 1 }}
       transition={{ duration: 0.5 }}
-      className={`relative w-full max-w-[920px] px-4 ${isDark ? "text-slate-100" : ""}`}
+      className={`relative w-full max-w-[920px] px-3 sm:px-4 ${isDark ? "text-slate-100" : ""}`}
     >
-      <PowerPlayBanner view={view} layout="horizontal" />
-
       <div
         className={`relative overflow-hidden rounded-xl border shadow-2xl backdrop-blur-md ${
           isDark
@@ -162,9 +162,9 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
             "0 4px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
+        {/* PP lives inside the card so OBS / overflow-hidden does not clip it */}
+        <PowerPlayBanner view={view} layout="horizontal" />
         <GoalAnimation active={goalFlash} side={goalSide} />
-
-        {emptyNet}
 
         <div
           className={`pointer-events-none absolute inset-0 opacity-[0.07] ${
@@ -172,7 +172,12 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
           }`}
         />
 
-        <div className="relative flex items-stretch gap-3 px-4 py-4 sm:gap-6 sm:px-6 sm:py-5">
+        <div className="relative flex items-stretch gap-2 px-3 py-3 sm:gap-6 sm:px-5 sm:py-5">
+          {view.emptyNetSide ? (
+            <div className="pointer-events-none absolute right-2 top-1 z-10">
+              {emptyNetBadge}
+            </div>
+          ) : null}
           <TeamBlock
             team={view.away}
             side="away"
@@ -180,10 +185,10 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
             showShots={showShots}
           />
 
-          <div className="flex w-[120px] shrink-0 flex-col items-center justify-center border-x border-white/10 px-2 sm:w-[140px]">
+          <div className="flex w-[108px] shrink-0 flex-col items-center justify-center border-x border-white/10 px-1.5 sm:w-[130px] sm:px-2">
             <Clock view={view} periodLabel={periodLabel} />
             {showSeries && view.seriesText ? (
-              <p className="mt-2 max-w-[11rem] text-center text-[9px] font-medium uppercase leading-tight tracking-wide text-slate-400">
+              <p className="mt-2 max-w-[11rem] text-center text-[10px] font-medium uppercase leading-tight tracking-wide text-slate-400 sm:text-[11px]">
                 {view.seriesText}
               </p>
             ) : null}
@@ -198,7 +203,7 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
         </div>
 
         {showSponsor ? (
-          <div className="border-t border-white/5 py-1 text-center text-[8px] uppercase tracking-[0.4em] text-slate-600">
+          <div className="border-t border-white/10 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 sm:text-[11px]">
             Stanley Cup Playoffs
           </div>
         ) : null}
