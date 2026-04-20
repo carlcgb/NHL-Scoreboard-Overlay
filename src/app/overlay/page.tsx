@@ -12,14 +12,19 @@ function OverlayContent() {
   const gameId = gameStr ? parseInt(gameStr, 10) : NaN;
   const validId = Number.isFinite(gameId) ? gameId : null;
 
+  const vertical =
+    searchParams.get("vertical") === "1" ||
+    searchParams.get("tiktok") === "1";
+
   const options: ScoreboardOptions = useMemo(
     () => ({
       showShots: searchParams.get("shots") === "1",
       showSeries: searchParams.get("series") === "1",
       showSponsor: searchParams.get("sponsor") !== "0",
       theme: searchParams.get("theme") === "dark" ? "dark" : "default",
+      layout: vertical ? "vertical" : "horizontal",
     }),
-    [searchParams],
+    [searchParams, vertical],
   );
 
   useEffect(() => {
@@ -66,16 +71,29 @@ function OverlayKeyed() {
   return <OverlayContent key={game} />;
 }
 
+function OverlayWithChrome() {
+  const searchParams = useSearchParams();
+  const vertical =
+    searchParams.get("vertical") === "1" ||
+    searchParams.get("tiktok") === "1";
+
+  return (
+    <OverlayChrome vertical={vertical}>
+      <OverlayKeyed />
+    </OverlayChrome>
+  );
+}
+
 export default function OverlayPage() {
   return (
-    <OverlayChrome>
-      <Suspense
-        fallback={
-          <div className="text-xs text-slate-400">Loading overlay…</div>
-        }
-      >
-        <OverlayKeyed />
-      </Suspense>
-    </OverlayChrome>
+    <Suspense
+      fallback={
+        <div className="pointer-events-none fixed inset-0 flex items-start justify-center pt-6 text-xs text-slate-400">
+          Loading overlay…
+        </div>
+      }
+    >
+      <OverlayWithChrome />
+    </Suspense>
   );
 }

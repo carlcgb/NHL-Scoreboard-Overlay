@@ -19,7 +19,7 @@ Deploy to [Vercel](https://vercel.com): connect the repo and use the default Nex
 
 | Path | Purpose |
 |------|---------|
-| `/overlay?game=GAME_ID` | Transparent scoreboard (OBS). Query: `shots=1`, `series=1`, `sponsor=0`, `theme=dark` |
+| `/overlay?game=GAME_ID` | Transparent scoreboard (OBS). Query: `shots=1`, `series=1`, `sponsor=0`, `theme=dark`, **`vertical=1` or `tiktok=1`** for a tall stacked layout (larger type, better on 9:16 / TikTok) |
 | `/today` | Redirects to the only live playoff game, or lists multiple live games |
 | `/admin/mock` | Mock controls for stream tests (gate with `NEXT_PUBLIC_MOCK_KEY` in production) |
 
