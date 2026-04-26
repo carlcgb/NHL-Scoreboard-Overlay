@@ -13,7 +13,7 @@ export default function Home() {
       </div>
       <nav className="flex flex-col gap-4 text-sky-400 sm:flex-row sm:gap-8">
         <Link href="/today" className="underline underline-offset-4 hover:text-sky-300">
-          Today — pick live playoff game
+          Today — full schedule (all games)
         </Link>
         <Link
           href="/overlay?game=2025030154"
