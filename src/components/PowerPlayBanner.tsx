@@ -29,7 +29,7 @@ function PowerPlayBannerInner({ view, layout = "horizontal" }: Props) {
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
-          className="relative z-20 w-full overflow-hidden border-b border-amber-600/30 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500"
+          className="relative z-[25] w-full overflow-hidden border-b border-yellow-600/60 bg-yellow-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
         >
           <div
             className={`flex w-full flex-col items-stretch justify-center gap-1 sm:flex-row sm:items-center sm:justify-center sm:gap-3 ${
