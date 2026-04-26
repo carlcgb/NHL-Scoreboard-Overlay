@@ -9,6 +9,7 @@ import {
   fetchPlayByPlay,
   type BoxscoreResponse,
   type LandingResponse,
+  type PlayByPlayResponse,
 } from "@/lib/nhl-api";
 import {
   INTERVAL_FAST_MS,
@@ -72,9 +73,10 @@ function applyMock(base: GameViewModel, mock: MockOverride | null): GameViewMode
         powerPlayAbbrev: adv,
         penaltyKillAbbrev: other,
       },
+      powerPlayClockTime: "1:45",
     };
   } else if (mock.powerPlayAbbrev === null) {
-    next = { ...next, specialTeams: null };
+    next = { ...next, specialTeams: null, powerPlayClockTime: null };
   }
   return next;
 }
@@ -116,6 +118,7 @@ function syntheticMockView(gameId: number, mock: MockOverride): GameViewModel {
     emptyNetSide: null,
     seriesText: null,
     situationCode: null,
+    powerPlayClockTime: null,
   };
 }
 
@@ -125,6 +128,7 @@ export function useGameFeed({ gameId, mock, mockOnly }: UseGameFeedOptions) {
   const [goalSide, setGoalSide] = useState<"away" | "home" | null>(null);
 
   const landingCache = useRef<LandingResponse | null>(null);
+  const pbpCache = useRef<PlayByPlayResponse | null>(null);
   const tickCount = useRef(0);
   const backoffMs = useRef(0);
   const prevScores = useRef<{ away: number; home: number } | null>(null);
@@ -150,22 +154,22 @@ export function useGameFeed({ gameId, mock, mockOnly }: UseGameFeedOptions) {
         landingCache.current = null;
       }
     }
-    let pbp = null;
     tickCount.current += 1;
     const gs = box.gameState;
     const live = gs === "LIVE" || gs === "CRIT";
-    if (live && tickCount.current % 5 === 0) {
+    if (live && (tickCount.current === 1 || tickCount.current % 2 === 0)) {
       try {
-        pbp = await fetchPlayByPlay(gameId);
+        pbpCache.current = await fetchPlayByPlay(gameId);
       } catch {
-        pbp = null;
+        /* keep last pbp for situation + penalty clock */
       }
     }
-    return mergeGameState(box, landingCache.current, pbp);
+    return mergeGameState(box, landingCache.current, pbpCache.current);
   }, [gameId]);
 
   useEffect(() => {
     landingCache.current = null;
+    pbpCache.current = null;
     tickCount.current = 0;
     prevScores.current = null;
     backoffMs.current = 0;

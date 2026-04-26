@@ -25,10 +25,10 @@ function PowerPlayBannerInner({ view, layout = "horizontal" }: Props) {
       {show ? (
         <motion.div
           key="pp"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
           className="relative z-[25] w-full overflow-hidden border-b border-yellow-600/60 bg-yellow-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
         >
           <div
@@ -50,11 +50,14 @@ function PowerPlayBannerInner({ view, layout = "horizontal" }: Props) {
                 Power Play{" "}
                 <span className="whitespace-nowrap">{st.powerPlayAbbrev}</span>
               </span>
-              <span
-                className={`font-mono font-black tabular-nums text-slate-950 ${vertical ? "text-base sm:text-lg" : "text-sm sm:text-base"}`}
-              >
-                {formatClock(view.clockTime)}
-              </span>
+              {view.powerPlayClockTime ? (
+                <span
+                  className={`font-mono font-black tabular-nums text-slate-950 ${vertical ? "text-base sm:text-lg" : "text-sm sm:text-base"}`}
+                  title="Approx. PK time remaining (from penalty vs game clock)"
+                >
+                  {formatClock(view.powerPlayClockTime)}
+                </span>
+              ) : null}
             </div>
             <div
               className={`text-center font-bold uppercase text-slate-900/90 sm:border-l sm:border-slate-900/15 sm:pl-3 ${vertical ? "text-xs sm:text-sm" : "text-[11px] sm:text-xs"}`}

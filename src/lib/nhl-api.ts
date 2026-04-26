@@ -48,6 +48,11 @@ export interface GameViewModel {
   seriesText: string | null;
   /** Raw situation code when available */
   situationCode: string | null;
+  /**
+   * Approximate time remaining on the current PK minor (from play-by-play vs
+   * game clock). Null if unknown — never duplicate the main game clock here.
+   */
+  powerPlayClockTime: string | null;
 }
 
 interface BoxTeam {
@@ -123,9 +128,80 @@ export interface ScoreNowResponse {
   }>;
 }
 
-interface PlayByPlayResponse {
+export interface PlayByPlayPlay {
+  typeDescKey?: string;
+  sortOrder?: number;
+  periodDescriptor?: PeriodDescriptor;
+  timeRemaining?: string;
+  situationCode?: string;
+  details?: {
+    duration?: number;
+    eventOwnerTeamId?: number;
+    typeCode?: string;
+  };
+}
+
+export interface PlayByPlayResponse {
   gameState?: string;
-  plays?: Array<{ situationCode?: string; sortOrder?: number }>;
+  plays?: PlayByPlayPlay[];
+}
+
+function parseClockToSeconds(clock: string | undefined): number | null {
+  if (!clock) return null;
+  const m = clock.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1]!, 10) * 60 + parseInt(m[2]!, 10);
+}
+
+function formatSecondsAsClock(sec: number): string {
+  const s = Math.max(0, Math.floor(sec));
+  const mn = Math.floor(s / 60);
+  const r = s % 60;
+  return `${mn}:${r.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Rough PP penalty clock: last PK penalty in this period vs current game clock.
+ * Stoppages can skew this vs TV; still better than echoing the game clock.
+ */
+function estimatePowerPlayClockRemaining(
+  box: BoxscoreResponse,
+  pbp: PlayByPlayResponse | null,
+  penaltyKillAbbrev: string,
+): string | null {
+  if (!pbp?.plays?.length) return null;
+  const periodNum = box.periodDescriptor?.number;
+  if (!periodNum) return null;
+  const pkId =
+    box.homeTeam.abbrev === penaltyKillAbbrev
+      ? box.homeTeam.id
+      : box.awayTeam.id;
+  if (!pkId) return null;
+
+  const penalties = pbp.plays.filter(
+    (pl): pl is PlayByPlayPlay =>
+      pl.typeDescKey === "penalty" &&
+      pl.periodDescriptor?.number === periodNum &&
+      pl.details?.eventOwnerTeamId === pkId &&
+      typeof pl.details?.duration === "number" &&
+      typeof pl.timeRemaining === "string",
+  );
+  if (!penalties.length) return null;
+
+  penalties.sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
+  const cur = parseClockToSeconds(box.clock?.timeRemaining);
+  if (cur === null) return null;
+
+  for (const pen of penalties) {
+    const r0 = parseClockToSeconds(pen.timeRemaining);
+    if (r0 === null) continue;
+    const durSec = (pen.details!.duration ?? 2) * 60;
+    const rem = cur - r0 + durSec;
+    if (rem > 0 && rem <= durSec + 10) {
+      return formatSecondsAsClock(rem);
+    }
+  }
+  return null;
 }
 
 function teamName(t: BoxTeam | LandingTeam): string {
@@ -284,6 +360,15 @@ export function mergeGameState(
   const clockRunning = box.clock?.running === true;
   const inIntermission = box.clock?.inIntermission === true;
 
+  const powerPlayClockTime =
+    specialTeams?.mode === "pp"
+      ? estimatePowerPlayClockRemaining(
+          box,
+          pbp,
+          specialTeams.penaltyKillAbbrev,
+        )
+      : null;
+
   return {
     gameId: box.id,
     gameState: gs,
@@ -301,6 +386,7 @@ export function mergeGameState(
     emptyNetSide,
     seriesText,
     situationCode,
+    powerPlayClockTime,
   };
 }
 
