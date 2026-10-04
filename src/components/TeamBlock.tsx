@@ -18,12 +18,12 @@ type Props = {
  * NHL SVGs via `next/image` can render empty; use `<img>` with URL fallbacks.
  * Prefer `logo`, then `darkLogo` if the first request fails.
  */
-function LogoBlock({
+export function LogoBlock({
   team,
   size = "default",
 }: {
   team: TeamSide;
-  size?: "default" | "vertical";
+  size?: "default" | "vertical" | "compact";
 }) {
   const candidates = useMemo(() => {
     const l = team.logo?.trim();
@@ -43,7 +43,9 @@ function LogoBlock({
   const box =
     size === "vertical"
       ? "h-[4.5rem] w-[4.5rem] rounded-xl p-2 ring-2 ring-black/25 sm:h-[5.25rem] sm:w-[5.25rem]"
-      : "h-14 w-14 rounded-lg p-1.5 ring-1 ring-black/20 sm:h-16 sm:w-16";
+      : size === "compact"
+        ? "h-5 w-5 rounded p-px ring-1 ring-black/20"
+        : "h-14 w-14 rounded-lg p-1.5 ring-1 ring-black/20 sm:h-16 sm:w-16";
 
   return (
     <div
@@ -51,7 +53,7 @@ function LogoBlock({
     >
       {exhausted || !src ? (
         <span
-          className={`text-center font-black leading-tight text-slate-800 ${size === "vertical" ? "text-xs" : "text-[10px]"}`}
+          className={`text-center font-black leading-tight text-slate-800 ${size === "vertical" ? "text-xs" : size === "compact" ? "text-[7px]" : "text-[10px]"}`}
         >
           {team.abbrev}
         </span>

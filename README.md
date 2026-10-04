@@ -19,7 +19,7 @@ Deploy to [Vercel](https://vercel.com): connect the repo and use the default Nex
 
 | Path | Purpose |
 |------|---------|
-| `/overlay?game=GAME_ID` | Transparent scoreboard (OBS). Query: `shots=1`, `series=1`, `sponsor=0`, `theme=dark`, **`vertical=1` or `tiktok=1`** for a tall stacked layout (larger type, better on 9:16 / TikTok) |
+| `/overlay?game=GAME_ID` | Transparent scoreboard (OBS). Query: `shots=1`, `series=1`, `sponsor=0`, `theme=dark`, **`vertical=1` or `tiktok=1`** for a tall stacked layout (larger type, better on 9:16 / TikTok), **`compact=1`** for a slim, panel-less single-row strip on a transparent background (Twitch); a red light + GOAL chip fires only when MTL scores, `pos=tl\|tr\|bl\|br` to pin the compact pill to a corner (default `tl`) |
 | `/today` | Redirects to the only live playoff game, or lists multiple live games |
 | `/admin/mock` | Mock controls for stream tests (gate with `NEXT_PUBLIC_MOCK_KEY` in production) |
 
@@ -28,6 +28,7 @@ Deploy to [Vercel](https://vercel.com): connect the repo and use the default Nex
 - **URL:** `https://YOUR_DOMAIN/overlay?game=GAME_ID`
 - **Size:** **1920×1080** (full frame) or a compact top bar such as **1600×180**
 - Check **Shutdown source when not visible** (optional) and refresh browser source between games if needed
+- **Compact / discreet (Twitch):** `/overlay?game=GAME_ID&compact=1&pos=tr` — add a ~**380×40** browser source and place it in a corner; combine with `shots=1` / `series=1` if wanted
 - Custom CSS (optional): `body { background: rgba(0,0,0,0) !important; }`
 
 ## Data

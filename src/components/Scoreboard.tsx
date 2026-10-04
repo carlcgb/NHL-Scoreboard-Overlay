@@ -8,14 +8,18 @@ import { TeamBlock } from "./TeamBlock";
 import { Clock } from "./Clock";
 import { PowerPlayBanner } from "./PowerPlayBanner";
 import { GoalAnimation } from "./GoalAnimation";
+import { CompactScoreboard } from "./CompactScoreboard";
 
 export type ScoreboardOptions = {
   showShots?: boolean;
   showSeries?: boolean;
   showSponsor?: boolean;
   theme?: "default" | "dark";
-  /** Tall narrow frame (e.g. TikTok 9:16): larger type, stacked teams */
-  layout?: "horizontal" | "vertical";
+  /**
+   * `vertical`: tall narrow frame (e.g. TikTok 9:16), larger type, stacked teams.
+   * `compact`: slim single-row pill for discreet corner placement (Twitch).
+   */
+  layout?: "horizontal" | "vertical" | "compact";
 };
 
 type Props = {
@@ -41,6 +45,18 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
   const showSponsor = options?.showSponsor ?? true;
   const isDark = options?.theme === "dark";
   const vertical = options?.layout === "vertical";
+
+  if (options?.layout === "compact") {
+    return (
+      <CompactScoreboard
+        view={view}
+        goalSide={goalSide}
+        periodLabel={periodLabel}
+        showShots={showShots}
+        showSeries={showSeries}
+      />
+    );
+  }
 
   const panelClass =
     isDark
