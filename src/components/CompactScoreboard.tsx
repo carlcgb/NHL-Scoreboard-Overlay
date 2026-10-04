@@ -122,10 +122,10 @@ function CompactScoreboardInner({
           <motion.div
             key="red-light"
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0.4, 1, 0.4] }}
+            animate={{ opacity: [0.3, 0.8, 0.3] }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
-            className="pointer-events-none absolute -inset-x-3 -inset-y-2 rounded-full bg-red-600/60 blur-lg"
+            className="pointer-events-none absolute -inset-x-3 -inset-y-2 rounded-full bg-red-600 blur-md"
           />
         ) : null}
       </AnimatePresence>
