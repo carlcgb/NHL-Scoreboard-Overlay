@@ -130,7 +130,11 @@ function MockInner() {
 
       <div className="pointer-events-auto rounded-xl border border-white/10 bg-black/40 p-8">
         {view ? (
-          <Scoreboard view={view} goalSide={goalSide} options={{ showShots: true }} />
+          <Scoreboard view={view} goalSide={goalSide} options={{
+              showShots: true,
+              layout: searchParams.get("compact") === "1" ? "compact" : "horizontal",
+            }}
+          />
         ) : null}
       </div>
     </main>

@@ -175,6 +175,26 @@ export function useGameFeed({ gameId, mock, mockOnly }: UseGameFeedOptions) {
     backoffMs.current = 0;
   }, [gameId]);
 
+  /** Mock mode has no polling loop, so pulse goals off score changes directly. */
+  useEffect(() => {
+    if (!mockOnly || !mockView) return;
+    const prev = prevScores.current;
+    prevScores.current = {
+      away: mockView.away.score,
+      home: mockView.home.score,
+    };
+    if (!prev) return;
+    const side =
+      mockView.away.score > prev.away
+        ? "away"
+        : mockView.home.score > prev.home
+          ? "home"
+          : null;
+    if (!side) return;
+    setGoalSide(side);
+    window.setTimeout(() => setGoalSide(null), 2800);
+  }, [mockOnly, mockView]);
+
   useEffect(() => {
     if (!gameId || mockOnly) return;
 

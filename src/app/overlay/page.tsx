@@ -3,8 +3,12 @@
 import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Scoreboard, type ScoreboardOptions } from "@/components/Scoreboard";
-import { OverlayChrome } from "@/components/OverlayChrome";
+import { OverlayChrome, isCorner } from "@/components/OverlayChrome";
 import { useGameFeed } from "@/hooks/useGameFeed";
+
+function useIsCompact() {
+  return useSearchParams().get("compact") === "1";
+}
 
 function OverlayContent() {
   const searchParams = useSearchParams();
@@ -16,15 +20,17 @@ function OverlayContent() {
     searchParams.get("vertical") === "1" ||
     searchParams.get("tiktok") === "1";
 
+  const compact = useIsCompact();
+
   const options: ScoreboardOptions = useMemo(
     () => ({
       showShots: searchParams.get("shots") === "1",
       showSeries: searchParams.get("series") === "1",
       showSponsor: searchParams.get("sponsor") !== "0",
       theme: searchParams.get("theme") === "dark" ? "dark" : "default",
-      layout: vertical ? "vertical" : "horizontal",
+      layout: compact ? "compact" : vertical ? "vertical" : "horizontal",
     }),
-    [searchParams, vertical],
+    [searchParams, vertical, compact],
   );
 
   useEffect(() => {
@@ -73,12 +79,19 @@ function OverlayKeyed() {
 
 function OverlayWithChrome() {
   const searchParams = useSearchParams();
+  const compact = useIsCompact();
   const vertical =
-    searchParams.get("vertical") === "1" ||
-    searchParams.get("tiktok") === "1";
+    !compact &&
+    (searchParams.get("vertical") === "1" ||
+      searchParams.get("tiktok") === "1");
+  const pos = searchParams.get("pos");
 
   return (
-    <OverlayChrome vertical={vertical}>
+    <OverlayChrome
+      vertical={vertical}
+      compact={compact}
+      position={isCorner(pos) ? pos : "tl"}
+    >
       <OverlayKeyed />
     </OverlayChrome>
   );
