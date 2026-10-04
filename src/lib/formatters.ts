@@ -50,3 +50,17 @@ export function formatSeriesLead(
   if (!leader) return `${topAbbrev} ${topWins}–${bottomWins} ${bottomAbbrev}`;
   return `${leader} leads ${Math.max(topWins, bottomWins)}–${Math.min(topWins, bottomWins)}`;
 }
+
+/** Toronto calendar date YYYY-MM-DD, the day key for NHL /v1/score/{date} */
+export function torontoDateString(d = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Toronto",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+  return `${y}-${m}-${day}`;
+}

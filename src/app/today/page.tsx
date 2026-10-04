@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { torontoDateString } from "@/lib/formatters";
 
 type Game = {
   id: number;
@@ -13,20 +14,6 @@ type Game = {
 
 function involvesMtl(g: Game): boolean {
   return g.awayTeam.abbrev === "MTL" || g.homeTeam.abbrev === "MTL";
-}
-
-/** Toronto calendar date YYYY-MM-DD for NHL /v1/score/{date} */
-function easternDateString(d = new Date()): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Toronto",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(d);
-  const y = parts.find((p) => p.type === "year")?.value;
-  const m = parts.find((p) => p.type === "month")?.value;
-  const day = parts.find((p) => p.type === "day")?.value;
-  return `${y}-${m}-${day}`;
 }
 
 /** Eastern (Toronto) puck drop, e.g. 7:00 p.m. ET */
@@ -51,7 +38,7 @@ function gameTypeShort(type: number): string | null {
 }
 
 async function fetchScoreForEasternToday(): Promise<{ games?: Game[] }> {
-  const date = easternDateString();
+  const date = torontoDateString();
   const res = await fetch(`https://api-web.nhle.com/v1/score/${date}`, {
     next: { revalidate: 15 },
   });
@@ -207,7 +194,7 @@ export default async function TodayPage() {
     redirect(`/overlay?game=${liveToday[0]!.id}`);
   }
 
-  const dateLabel = easternDateString();
+  const dateLabel = torontoDateString();
   const baseTitle = `NHL — ${dateLabel}`;
   const timeNote =
     "All games on the Toronto calendar day, Eastern puck times. PO = playoffs, RS = regular season.";
