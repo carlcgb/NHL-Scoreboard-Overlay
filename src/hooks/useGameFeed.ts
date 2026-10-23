@@ -132,6 +132,7 @@ export function useGameFeed({ gameId, mock, mockOnly }: UseGameFeedOptions) {
   const tickCount = useRef(0);
   const backoffMs = useRef(0);
   const prevScores = useRef<{ away: number; home: number } | null>(null);
+  const activeGameId = useRef(gameId);
 
   const mockView = useMemo(() => {
     if (!gameId || !mockOnly || !mock) return null;
@@ -158,11 +159,14 @@ export function useGameFeed({ gameId, mock, mockOnly }: UseGameFeedOptions) {
     const gs = box.gameState;
     const live = gs === "LIVE" || gs === "CRIT";
     if (live && (tickCount.current === 1 || tickCount.current % 2 === 0)) {
-      try {
-        pbpCache.current = await fetchPlayByPlay(gameId);
-      } catch {
-        /* keep last pbp for situation + penalty clock */
-      }
+      // Fire and forget: awaiting it here delayed every clock update.
+      void fetchPlayByPlay(gameId)
+        .then((pbp) => {
+          if (activeGameId.current === gameId) pbpCache.current = pbp;
+        })
+        .catch(() => {
+          /* keep last pbp for situation + penalty clock */
+        });
     }
     return mergeGameState(box, landingCache.current, pbpCache.current);
   }, [gameId]);
@@ -173,6 +177,7 @@ export function useGameFeed({ gameId, mock, mockOnly }: UseGameFeedOptions) {
     tickCount.current = 0;
     prevScores.current = null;
     backoffMs.current = 0;
+    activeGameId.current = gameId;
   }, [gameId]);
 
   /** Mock mode has no polling loop, so pulse goals off score changes directly. */

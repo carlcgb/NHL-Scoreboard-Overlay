@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { AnimatePresence } from "framer-motion";
 import { Scoreboard, type ScoreboardOptions } from "@/components/Scoreboard";
 import { OverlayChrome, isCorner } from "@/components/OverlayChrome";
 import { useGameFeed } from "@/hooks/useGameFeed";
@@ -19,20 +20,11 @@ function OverlayContent({
   options,
   quiet,
 }: {
-  gameId: number | null;
+  gameId: number;
   options: ScoreboardOptions;
   quiet: boolean;
 }) {
   const { view, error, goalSide } = useGameFeed({ gameId, mockOnly: false });
-
-  if (!gameId) {
-    if (quiet) return null;
-    return (
-      <div className="rounded-lg border border-white/20 bg-black/80 px-6 py-4 text-sm text-white">
-        Add <span className="font-mono">?game=GAME_ID</span> (NHL gamecenter ID)
-      </div>
-    );
-  }
 
   if (error && !view) {
     if (quiet) return null;
@@ -76,6 +68,7 @@ export function OverlayView({
       showShots: searchParams.get("shots") === "1",
       showSeries: searchParams.get("series") === "1",
       showSponsor: searchParams.get("sponsor") !== "0",
+      showPanel: searchParams.get("panel") !== "0",
       theme: searchParams.get("theme") === "dark" ? "dark" : "default",
       layout: compact ? "compact" : vertical ? "vertical" : "horizontal",
     }),
@@ -97,13 +90,24 @@ export function OverlayView({
       compact={compact}
       position={isCorner(pos) ? pos : "tl"}
     >
-      {/* Keyed so a new game never shows the previous game's state */}
-      <OverlayContent
-        key={gameId ?? "none"}
-        gameId={gameId}
-        options={options}
-        quiet={quiet}
-      />
+      {/* Keyed so a new game never shows the previous game's state; the
+          presence wrapper lets the board fade out when the game goes away */}
+      <AnimatePresence>
+        {gameId ? (
+          <OverlayContent
+            key={gameId}
+            gameId={gameId}
+            options={options}
+            quiet={quiet}
+          />
+        ) : null}
+      </AnimatePresence>
+      {!gameId && !quiet ? (
+        <div className="rounded-lg border border-white/20 bg-black/80 px-6 py-4 text-sm text-white">
+          Add <span className="font-mono">?game=GAME_ID</span> (NHL gamecenter
+          ID)
+        </div>
+      ) : null}
     </OverlayChrome>
   );
 }

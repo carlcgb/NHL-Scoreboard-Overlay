@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatClock } from "@/lib/formatters";
+import { usePowerPlayClock } from "@/hooks/useSmoothClock";
 import type { GameViewModel } from "@/lib/nhl-api";
 
 type Props = {
@@ -11,6 +11,7 @@ type Props = {
 };
 
 function PowerPlayBannerInner({ view, layout = "horizontal" }: Props) {
+  const ppClock = usePowerPlayClock(view);
   const st = view.specialTeams;
   const show =
     st &&
@@ -50,12 +51,12 @@ function PowerPlayBannerInner({ view, layout = "horizontal" }: Props) {
                 Power Play{" "}
                 <span className="whitespace-nowrap">{st.powerPlayAbbrev}</span>
               </span>
-              {view.powerPlayClockTime ? (
+              {ppClock ? (
                 <span
                   className={`font-mono font-black tabular-nums text-slate-950 ${vertical ? "text-base sm:text-lg" : "text-sm sm:text-base"}`}
                   title="Approx. PK time remaining (from penalty vs game clock)"
                 >
-                  {formatClock(view.powerPlayClockTime)}
+                  {ppClock}
                 </span>
               ) : null}
             </div>
