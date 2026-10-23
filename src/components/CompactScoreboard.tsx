@@ -2,7 +2,8 @@
 
 import { memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { formatClock } from "@/lib/formatters";
+import { useGameClock, usePowerPlayClock } from "@/hooks/useSmoothClock";
+import { ScoreNumber } from "./ScoreNumber";
 import { getTeamColors, getAbbrevTextColor } from "@/lib/team-colors";
 import type { GameViewModel, TeamSide } from "@/lib/nhl-api";
 import { LogoBlock } from "./TeamBlock";
@@ -40,20 +41,7 @@ function Team({
     </span>
   );
   const score = (
-    <motion.span
-      animate={
-        goal
-          ? {
-              scale: [1, 1.25, 1],
-              filter: ["brightness(1)", "brightness(1.6)", "brightness(1)"],
-            }
-          : {}
-      }
-      transition={{ duration: 0.45, ease: "easeOut" }}
-      className="min-w-[1ch] text-center font-mono text-base font-black tabular-nums leading-none text-white"
-    >
-      {team.score}
-    </motion.span>
+    <ScoreNumber value={team.score} pulse={goal} className="text-base" />
   );
   const sog = showShots ? (
     <span className="font-mono text-[9px] text-slate-400">{team.sog}</span>
@@ -94,14 +82,17 @@ function CompactScoreboardInner({
   showShots,
   showSeries,
 }: Props) {
+  const clock = useGameClock(view);
+  const ppClock = usePowerPlayClock(view);
   const st = view.specialTeams;
   const showPP =
     st && !view.isFinal && !view.inIntermission && view.gameState !== "PRE";
 
   let status: string;
   if (view.isFinal) status = "Final";
-  else if (view.inIntermission) status = `INT ${formatClock(view.clockTime)}`;
-  else status = `${periodLabel} ${formatClock(view.clockTime)}`;
+  else if (view.isPreview) status = "Pregame";
+  else if (view.inIntermission) status = `INT ${clock}`;
+  else status = `${periodLabel} ${clock}`;
 
   const redLight =
     goalSide !== null &&
@@ -111,8 +102,9 @@ function CompactScoreboardInner({
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: view.isFinal ? 0.75 : 1 }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: view.isFinal ? 0.75 : 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
       transition={{ duration: 0.5 }}
       className="relative flex w-fit max-w-full items-center gap-1.5 whitespace-nowrap px-1"
       style={{ textShadow: TEXT_SHADOW }}
@@ -164,9 +156,7 @@ function CompactScoreboardInner({
           title="Power play"
         >
           PP {st.powerPlayAbbrev}
-          {view.powerPlayClockTime
-            ? ` ${formatClock(view.powerPlayClockTime)}`
-            : ""}
+          {ppClock ? ` ${ppClock}` : ""}
         </span>
       ) : null}
 

@@ -28,6 +28,20 @@ export function formatPeriod(
   return `P${n}`;
 }
 
+/** "8:42" -> 522; null if the string is not an M:SS clock. */
+export function parseClockSeconds(clock: string | null | undefined): number | null {
+  if (!clock) return null;
+  const m = clock.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1]!, 10) * 60 + parseInt(m[2]!, 10);
+}
+
+/** 522 -> "8:42" */
+export function formatClockSeconds(sec: number): string {
+  const s = Math.max(0, Math.floor(sec));
+  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+}
+
 export function formatClock(timeRemaining: string | undefined): string {
   if (!timeRemaining || timeRemaining === "") return "0:00";
   const trimmed = timeRemaining.trim();

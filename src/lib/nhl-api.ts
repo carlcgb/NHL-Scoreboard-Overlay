@@ -1,4 +1,8 @@
-import { formatSeriesLead } from "./formatters";
+import {
+  formatClockSeconds,
+  formatSeriesLead,
+  parseClockSeconds,
+} from "./formatters";
 
 /** Base path for same-origin proxy (avoids CORS). */
 export function apiPath(path: string): string {
@@ -146,20 +150,6 @@ export interface PlayByPlayResponse {
   plays?: PlayByPlayPlay[];
 }
 
-function parseClockToSeconds(clock: string | undefined): number | null {
-  if (!clock) return null;
-  const m = clock.trim().match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  return parseInt(m[1]!, 10) * 60 + parseInt(m[2]!, 10);
-}
-
-function formatSecondsAsClock(sec: number): string {
-  const s = Math.max(0, Math.floor(sec));
-  const mn = Math.floor(s / 60);
-  const r = s % 60;
-  return `${mn}:${r.toString().padStart(2, "0")}`;
-}
-
 /**
  * Rough PP penalty clock: last PK penalty in this period vs current game clock.
  * Stoppages can skew this vs TV; still better than echoing the game clock.
@@ -189,16 +179,16 @@ function estimatePowerPlayClockRemaining(
   if (!penalties.length) return null;
 
   penalties.sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
-  const cur = parseClockToSeconds(box.clock?.timeRemaining);
+  const cur = parseClockSeconds(box.clock?.timeRemaining);
   if (cur === null) return null;
 
   for (const pen of penalties) {
-    const r0 = parseClockToSeconds(pen.timeRemaining);
+    const r0 = parseClockSeconds(pen.timeRemaining);
     if (r0 === null) continue;
     const durSec = (pen.details!.duration ?? 2) * 60;
     const rem = cur - r0 + durSec;
     if (rem > 0 && rem <= durSec + 10) {
-      return formatSecondsAsClock(rem);
+      return formatClockSeconds(rem);
     }
   }
   return null;

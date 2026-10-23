@@ -7,6 +7,7 @@ import { formatPeriod } from "@/lib/formatters";
 import { TeamBlock } from "./TeamBlock";
 import { Clock } from "./Clock";
 import { PowerPlayBanner } from "./PowerPlayBanner";
+import { StatusChips } from "./StatusChips";
 import { GoalAnimation } from "./GoalAnimation";
 import { CompactScoreboard } from "./CompactScoreboard";
 
@@ -14,6 +15,8 @@ export type ScoreboardOptions = {
   showShots?: boolean;
   showSeries?: boolean;
   showSponsor?: boolean;
+  /** Glass panel behind the scores; false = text straight on the stream */
+  showPanel?: boolean;
   theme?: "default" | "dark";
   /**
    * `vertical`: tall narrow frame (e.g. TikTok 9:16), larger type, stacked teams.
@@ -45,6 +48,7 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
   const showSponsor = options?.showSponsor ?? true;
   const isDark = options?.theme === "dark";
   const vertical = options?.layout === "vertical";
+  const showPanel = options?.showPanel ?? true;
 
   if (options?.layout === "compact") {
     return (
@@ -60,8 +64,8 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
 
   const panelClass =
     isDark
-      ? "border-white/15 bg-slate-950/96"
-      : "border-white/20 bg-slate-900/95";
+      ? "border-white/10 bg-slate-950/80"
+      : "border-white/15 bg-slate-900/75";
 
   const commonGoal = (
     <GoalAnimation active={goalFlash} side={goalSide} vertical={vertical} />
@@ -83,8 +87,9 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
   if (vertical) {
     return (
       <motion.div
-        initial={{ opacity: 0.9 }}
-        animate={{ opacity: view.isFinal ? 0.96 : 1 }}
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: view.isFinal ? 0.96 : 1, y: 0 }}
+        exit={{ opacity: 0, y: -12 }}
         transition={{ duration: 0.5 }}
         className={`relative w-full max-w-[min(100vw,28rem)] px-2 sm:max-w-[min(100vw,32rem)] sm:px-3 ${isDark ? "text-slate-100" : ""}`}
       >
@@ -150,7 +155,7 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
             </div>
           </div>
 
-          {showSponsor ? (
+          {showSponsor && view.gameType === 3 ? (
             <div className="border-t border-white/10 py-2.5 text-center text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 sm:py-3 sm:text-xs sm:tracking-[0.35em]">
               Stanley Cup Playoffs
             </div>
@@ -160,40 +165,32 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
     );
   }
 
+  const panel = showPanel
+    ? isDark
+      ? "bg-gradient-to-b from-slate-950/80 to-slate-950/55 shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/10 backdrop-blur-md"
+      : "bg-gradient-to-b from-slate-900/70 to-slate-950/50 shadow-[0_8px_32px_rgba(0,0,0,0.45)] ring-1 ring-white/15 backdrop-blur-md"
+    : "";
+
   return (
     <motion.div
-      initial={{ opacity: 0.85 }}
-      animate={{ opacity: view.isFinal ? 0.95 : 1 }}
-      transition={{ duration: 0.5 }}
-      className={`relative w-full max-w-[920px] px-3 sm:px-4 ${isDark ? "text-slate-100" : ""}`}
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: view.isFinal ? 0.92 : 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`relative w-full max-w-[660px] px-3 ${isDark ? "text-slate-100" : ""}`}
+      style={
+        showPanel
+          ? undefined
+          : { textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.7)" }
+      }
     >
-      <div
-        className={`relative overflow-hidden rounded-xl border shadow-2xl backdrop-blur-md ${
-          isDark
-            ? "border-white/10 bg-slate-950/95"
-            : "border-white/15 bg-slate-900/90"
-        }`}
-        style={{
-          boxShadow:
-            "0 4px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
-        }}
-      >
-        {/* PP lives inside the card so OBS / overflow-hidden does not clip it */}
-        <PowerPlayBanner view={view} layout="horizontal" />
-        <GoalAnimation active={goalFlash} side={goalSide} />
-
+      <div className={`relative rounded-2xl ${panel}`}>
         <div
-          className={`pointer-events-none absolute inset-0 opacity-[0.07] ${
-            goalFlash ? "animate-pulse bg-amber-300/30" : ""
+          className={`pointer-events-none absolute inset-0 rounded-2xl ${
+            goalFlash ? "animate-pulse bg-white/10" : ""
           }`}
         />
-
-        <div className="relative flex items-stretch gap-2 px-3 py-3 sm:gap-6 sm:px-5 sm:py-5">
-          {view.emptyNetSide ? (
-            <div className="pointer-events-none absolute right-2 top-1 z-10">
-              {emptyNetBadge}
-            </div>
-          ) : null}
+        <div className="relative flex items-stretch gap-1 p-1.5">
           <TeamBlock
             team={view.away}
             side="away"
@@ -201,13 +198,8 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
             showShots={showShots}
           />
 
-          <div className="flex w-[108px] shrink-0 flex-col items-center justify-center border-x border-white/10 px-1.5 sm:w-[130px] sm:px-2">
+          <div className="flex w-[112px] shrink-0 flex-col items-center justify-center px-1">
             <Clock view={view} periodLabel={periodLabel} />
-            {showSeries && view.seriesText ? (
-              <p className="mt-2 max-w-[11rem] text-center text-[10px] font-medium uppercase leading-tight tracking-wide text-slate-400 sm:text-[11px]">
-                {view.seriesText}
-              </p>
-            ) : null}
           </div>
 
           <TeamBlock
@@ -217,13 +209,14 @@ function ScoreboardInner({ view, goalSide, options }: Props) {
             showShots={showShots}
           />
         </div>
-
-        {showSponsor ? (
-          <div className="border-t border-white/10 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 sm:text-[11px]">
-            Stanley Cup Playoffs
-          </div>
-        ) : null}
       </div>
+
+      <StatusChips
+        view={view}
+        goalSide={goalSide}
+        showSeries={showSeries}
+        showSponsor={showSponsor}
+      />
     </motion.div>
   );
 }

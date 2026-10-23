@@ -2,6 +2,7 @@
 
 import { memo, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { ScoreNumber } from "./ScoreNumber";
 import { getTeamColors, getAbbrevTextColor } from "@/lib/team-colors";
 import type { TeamSide } from "@/lib/nhl-api";
 
@@ -45,7 +46,7 @@ export function LogoBlock({
       ? "h-[4.5rem] w-[4.5rem] rounded-xl p-2 ring-2 ring-black/25 sm:h-[5.25rem] sm:w-[5.25rem]"
       : size === "compact"
         ? "h-5 w-5 rounded p-px ring-1 ring-black/20"
-        : "h-14 w-14 rounded-lg p-1.5 ring-1 ring-black/20 sm:h-16 sm:w-16";
+        : "h-12 w-12 rounded-xl p-1 shadow-md ring-1 ring-black/10";
 
   return (
     <div
@@ -91,13 +92,13 @@ function TextStack({
       className={`min-w-0 ${align === "right" ? "text-right" : "text-left"}`}
     >
       <div
-        className={`font-bold uppercase tracking-[0.15em] ${v ? "text-base font-black tracking-[0.2em] sm:text-lg" : "text-[11px] sm:text-xs"}`}
+        className={`font-bold uppercase tracking-[0.15em] ${v ? "text-base font-black tracking-[0.2em] sm:text-lg" : "text-sm font-extrabold tracking-[0.14em]"}`}
         style={{ color: abbrevColor }}
       >
         {team.abbrev}
       </div>
       <div
-        className={`truncate font-semibold uppercase tracking-wide text-slate-200 ${v ? "text-xs sm:text-sm" : "text-[10px] font-medium text-slate-300"}`}
+        className={`truncate font-semibold uppercase tracking-wide text-slate-200 ${v ? "text-xs sm:text-sm" : "text-[10px] font-medium tracking-wider text-slate-300/80"}`}
       >
         {team.name}
       </div>
@@ -125,22 +126,13 @@ function TeamBlockInner({
   ) : null;
 
   const scoreEl = (
-    <motion.div
-      animate={
-        goalPulse
-          ? {
-              scale: [1, 1.12, 1],
-              filter: ["brightness(1)", "brightness(1.45)", "brightness(1)"],
-            }
-          : {}
-      }
-      transition={{ duration: 0.45, ease: "easeOut" }}
-      className={`shrink-0 font-mono font-black tabular-nums text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] ${
-        v ? "text-5xl sm:text-6xl md:text-7xl" : "text-4xl sm:text-5xl"
+    <ScoreNumber
+      value={team.score}
+      pulse={goalPulse}
+      className={`shrink-0 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] ${
+        v ? "text-5xl sm:text-6xl md:text-7xl" : "text-[40px]"
       }`}
-    >
-      {team.score}
-    </motion.div>
+    />
   );
 
   const logoSize = v ? "vertical" : "default";
@@ -165,28 +157,52 @@ function TeamBlockInner({
     </div>
   );
 
-  const gap = v ? "gap-4 sm:gap-5" : "gap-3";
+  const gap = v ? "gap-4 sm:gap-5" : "gap-2.5";
+
+  /** Team-color wash toward the center + a glow when the team scores */
+  const accent = abbrevColor;
+  const wash = v
+    ? undefined
+    : {
+        background: `linear-gradient(${side === "away" ? 90 : 270}deg, ${accent}30, transparent 80%)`,
+      };
+  const rootClass = `grid min-w-0 flex-1 grid-cols-[auto_1fr_auto] items-center ${gap} ${v ? "" : "rounded-xl px-2 py-1.5"}`;
+  const glow = goalPulse
+    ? {
+        boxShadow: [
+          `0 0 0 0 ${accent}00`,
+          `0 0 26px 2px ${accent}aa`,
+          `0 0 0 0 ${accent}00`,
+        ],
+      }
+    : {};
 
   if (side === "away") {
     return (
-      <div
-        className={`grid min-w-0 flex-1 grid-cols-[auto_1fr_auto] items-center ${gap}`}
+      <motion.div
+        className={rootClass}
+        style={wash}
+        animate={glow}
+        transition={{ duration: 1.4, ease: "easeOut" }}
       >
         {logoEl}
         {textEl}
         {scoreEl}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div
-      className={`grid min-w-0 flex-1 grid-cols-[auto_1fr_auto] items-center ${gap}`}
+    <motion.div
+      className={rootClass}
+      style={wash}
+      animate={glow}
+      transition={{ duration: 1.4, ease: "easeOut" }}
     >
       {scoreEl}
       <div className="text-right [&_.truncate]:ml-auto [&_div]:ml-auto">{textEl}</div>
       {logoEl}
-    </div>
+    </motion.div>
   );
 }
 
